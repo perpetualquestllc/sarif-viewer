@@ -1,0 +1,23 @@
+{
+  "name": "sarif-viewer",
+  "version": "0.1.0",
+  "description": "Self-hosted SARIF report viewer with HTTP ingest endpoint and companion GitHub Action.",
+  "license": "MIT",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "hono": "^4.6.14"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/perpetualquestllc/sarif-viewer.git"
+  }
+}

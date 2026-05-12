@@ -1,0 +1,16 @@
+services:
+  sarif-viewer:
+    image: ghcr.io/perpetualquestllc/sarif-viewer:latest
+    container_name: sarif-viewer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      UPLOAD_TOKEN: ${UPLOAD_TOKEN:?set UPLOAD_TOKEN in .env}
+      # Optional: limit max upload size in bytes (default 50 MiB)
+      # MAX_BODY_BYTES: "52428800"
+    volumes:
+      - sarif-data:/data
+
+volumes:
+  sarif-data:

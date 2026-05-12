@@ -1,0 +1,79 @@
+name: smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+
+      - name: Boot server in background
+        env:
+          UPLOAD_TOKEN: smoke-token
+          PORT: '8080'
+          DATA_DIR: ${{ github.workspace }}/.sarif-data
+        run: |
+          node server.mjs &
+          echo "SERVER_PID=$!" >> $GITHUB_ENV
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:8080/healthz && exit 0
+            sleep 0.5
+          done
+          echo "server failed to come up"; exit 1
+
+      - name: Write sample SARIF
+        run: |
+          cat > sample.sarif <<'JSON'
+          {
+            "version": "2.1.0",
+            "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+            "runs": [{
+              "tool": { "driver": {
+                "name": "smoke-tool", "version": "0.0.1",
+                "rules": [{ "id": "S001", "shortDescription": { "text": "demo rule" } }]
+              }},
+              "results": [{
+                "ruleId": "S001",
+                "level": "error",
+                "message": { "text": "smoke test finding" },
+                "locations": [{ "physicalLocation": {
+                  "artifactLocation": { "uri": "src/example.js" },
+                  "region": { "startLine": 1 }
+                }}]
+              }]
+            }]
+          }
+          JSON
+
+      - name: Direct curl ingest
+        run: |
+          status=$(curl -s -o /tmp/out.json -w '%{http_code}' \
+            -H "Authorization: Bearer smoke-token" \
+            -H "Content-Type: application/json" \
+            --data-binary @sample.sarif \
+            "http://127.0.0.1:8080/api/reports?repo=demo/demo&commit=abc1234&workflow=smoke")
+          cat /tmp/out.json
+          test "$status" = "201"
+          id=$(jq -r .id /tmp/out.json)
+          curl -fsS "http://127.0.0.1:8080/api/reports/$id" >/dev/null
+          curl -fsS "http://127.0.0.1:8080/api/reports/$id/sarif" | grep -q '"ruleId": "S001"'
+
+      - name: Action self-test (upload.sh)
+        uses: ./action
+        with:
+          viewer-url: http://127.0.0.1:8080
+          token: smoke-token
+          sarif-file: sample.sarif
+          label: smoke-action
+
+      - name: Tear down
+        if: always()
+        run: kill ${{ env.SERVER_PID }} 2>/dev/null || true

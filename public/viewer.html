@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>SARIF report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/public/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1><a href="/">SARIF Viewer</a></h1>
+      <div id="meta-bar" class="muted small"></div>
+    </header>
+    <main class="container">
+      <section id="summary" class="summary"></section>
+      <section class="controls">
+        <input id="filter" type="search" placeholder="filter by rule, message, file…" />
+        <label><input type="checkbox" id="lvl-error" checked /> error</label>
+        <label><input type="checkbox" id="lvl-warning" checked /> warning</label>
+        <label><input type="checkbox" id="lvl-note" checked /> note</label>
+        <label><input type="checkbox" id="lvl-none" /> none</label>
+        <a id="download-raw" class="muted small" download>raw SARIF</a>
+      </section>
+      <section id="results"></section>
+    </main>
+    <script src="/public/viewer.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+name: 'Upload SARIF to sarif-viewer'
+description: 'POST a SARIF report to a self-hosted sarif-viewer instance.'
+author: 'perpetualquestllc'
+branding:
+  icon: 'upload-cloud'
+  color: 'blue'
+
+inputs:
+  viewer-url:
+    description: 'Base URL of the sarif-viewer instance (no trailing slash). Example: https://sarif.example.com'
+    required: true
+  token:
+    description: 'Bearer token matching the viewer''s UPLOAD_TOKEN env var.'
+    required: true
+  sarif-file:
+    description: 'Path to a single SARIF file to upload. Supports glob (first match used) — use sarif-files for multiple.'
+    required: false
+  sarif-files:
+    description: 'Newline- or comma-separated list of SARIF file paths or globs. If set, sarif-file is ignored.'
+    required: false
+  label:
+    description: 'Optional human-friendly label attached to the report (e.g. "trivy-fs", "codeql-js").'
+    required: false
+  fail-on:
+    description: 'If set to "error" or "warning", the action exits non-zero when the report contains a result at that level or above.'
+    required: false
+    default: ''
+  continue-on-error:
+    description: 'If true, ingest failures (network/auth) do not fail the workflow step.'
+    required: false
+    default: 'false'
+
+outputs:
+  report-ids:
+    description: 'Comma-separated list of report ids returned by the viewer.'
+    value: ${{ steps.upload.outputs.report-ids }}
+  report-urls:
+    description: 'Comma-separated list of viewer URLs (one per uploaded report).'
+    value: ${{ steps.upload.outputs.report-urls }}
+
+runs:
+  using: 'composite'
+  steps:
+    - id: upload
+      shell: bash
+      env:
+        INPUT_VIEWER_URL: ${{ inputs.viewer-url }}
+        INPUT_TOKEN: ${{ inputs.token }}
+        INPUT_SARIF_FILE: ${{ inputs.sarif-file }}
+        INPUT_SARIF_FILES: ${{ inputs.sarif-files }}
+        INPUT_LABEL: ${{ inputs.label }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_CONTINUE_ON_ERROR: ${{ inputs.continue-on-error }}
+        GH_REPOSITORY: ${{ github.repository }}
+        GH_SHA: ${{ github.sha }}
+        GH_REF: ${{ github.ref }}
+        GH_REF_NAME: ${{ github.ref_name }}
+        GH_WORKFLOW: ${{ github.workflow }}
+        GH_JOB: ${{ github.job }}
+        GH_RUN_ID: ${{ github.run_id }}
+        GH_SERVER_URL: ${{ github.server_url }}
+        GH_ACTOR: ${{ github.actor }}
+        GH_EVENT_NAME: ${{ github.event_name }}
+        GH_PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: ${{ github.action_path }}/upload.sh

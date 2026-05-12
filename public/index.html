@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>SARIF Viewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/public/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>SARIF Viewer</h1>
+      <div class="muted" id="report-count">loading…</div>
+    </header>
+    <main class="container">
+      <div id="reports"></div>
+      <div id="empty" class="empty" hidden>
+        <p>No reports yet. Upload a SARIF file:</p>
+        <pre><code>curl -X POST \
+  -H "Authorization: Bearer $UPLOAD_TOKEN" \
+  -H "Content-Type: application/json" \
+  --data-binary @results.sarif \
+  "$VIEWER_URL/api/reports?repo=owner/name&commit=abc123&workflow=ci.yml"</code></pre>
+      </div>
+    </main>
+    <script src="/public/index.js" defer></script>
+  </body>
+</html>
