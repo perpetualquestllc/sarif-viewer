@@ -1,5 +1,3 @@
 # CODEOWNERS — protects workflow files
-# Any change to .github/ requires approval from @sgraham785
-.github/workflows/**  @sgraham785
-.github/CODEOWNERS    @sgraham785
-.github/              @sgraham785
+# Any change to .github/ requires approval from @sgraham785 and the owners team
+.github/workflows/ @perpetualquestllc/owners
